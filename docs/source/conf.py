@@ -17,8 +17,8 @@ import sphinx_rtd_theme
 
 # -- Project information -----------------------------------------------------
 
-project = 'sample'
-copyright = '2021, Wang CHEN'
+project = 'vector_visualization'
+copyright = '2022, Wang CHEN'
 author = 'Wang CHEN'
 
 # The full version, including alpha/beta/rc tags

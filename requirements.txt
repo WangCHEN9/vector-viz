@@ -4,3 +4,7 @@ sphinx_rtd_theme
 black
 loguru
 hydra-core
+streamlit
+pandas
+matplotlib
+numpy

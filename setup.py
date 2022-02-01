@@ -9,9 +9,9 @@ from shutil import rmtree
 from setuptools import find_packages, setup, Command
 
 # Package meta-data.
-NAME = 'mypackage'
-DESCRIPTION = 'My short description for my project.'
-URL = 'https://github.com/me/myproject'
+NAME = 'vector_visualization'
+DESCRIPTION = 'time series vector visualization with streamlit.'
+URL = 'https://github.com/WangCHEN9/vector_visualization'
 EMAIL = 'solid.chen9@gmail.com'
 AUTHOR = 'Wang CHEN'
 REQUIRES_PYTHON = '>=3.7.0'
@@ -19,7 +19,7 @@ VERSION = '0.1.0'
 
 # What packages are required for this module to be executed?
 REQUIRED = [
-    'pytest', 'sphinx',
+    'pytest', 'sphinx','streamlit',
 ]
 
 # What packages are optional?
