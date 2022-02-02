@@ -130,7 +130,7 @@ class VectorViewer:
             self.arr, ax=self.ax, position_axis=position_axis
         )
 
-    def get_view(self):
+    def get_ani(self):
         self.ani = FuncAnimation(
             self.fig,
             self.quiver_force.update,
@@ -138,7 +138,7 @@ class VectorViewer:
             interval=1,
             repeat=False,
         )
-        return self.fig
+        return self.ani
 
     def save_ani(self, save_path: Path):
         writergif = animation.PillowWriter(fps=30)
@@ -163,5 +163,5 @@ if __name__ == "__main__":
     save_path = folder / "force_vector_animation.gif"
 
     v = VectorViewer(arr_all, position_axis=Axis.x)
-    v.get_view()
+    v.get_ani()
     # v.save_ani(save_path)

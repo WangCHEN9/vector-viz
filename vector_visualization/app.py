@@ -5,7 +5,8 @@ from loguru import logger
 import hydra
 from omegaconf import DictConfig, OmegaConf
 from pathlib import Path
-from vector_visualization.VectorAnimation import VectorViewer
+from vector_visualization.VectorAnimation import VectorViewer, Axis
+import streamlit.components.v1 as components
 
 
 @hydra.main(config_path="./", config_name="config")
@@ -35,8 +36,6 @@ class App:
         )
 
     def _preprocess_data(self):
-        for uploaded_file in self.uploaded_files:
-            st.write("file uploaded:", uploaded_file.name)
         arr_list = [
             pd.read_excel(file.read()).to_numpy() for file in self.uploaded_files
         ]
@@ -45,9 +44,15 @@ class App:
         logger.info(f"input array shape is : {self.arr_all.shape}")
 
     def show_plot(self):
-        v = VectorViewer(self.arr_all, position_axis=self.pos_axis)
-        fig = v.get_view()
-        st.pyplot(fig=fig, clear_figure=None)
+        with st.spinner("Working on it ..."):
+            v = VectorViewer(self.arr_all, position_axis=Axis.x)
+            ani = v.get_ani()
+            with open("./temp/myvideo.html", "w") as f:
+                print(ani.to_html5_video(), file=f)
+
+            HtmlFile = open("./temp/myvideo.html", "r")
+            source_code = HtmlFile.read()
+            components.html(source_code, height=900, width=900)
 
     def position_axis_select_box(self):
         self.pos_axis = st.selectbox(
