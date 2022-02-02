@@ -6,14 +6,23 @@ import pandas as pd
 from pathlib import Path
 from typing import List
 from loguru import logger
+from enum import Enum, auto
+import random
+
+
+class Axis(Enum):
+    x = auto()
+    y = auto()
+    z = auto()
 
 
 class QuiverForce:
-    def __init__(self, arr, ax) -> None:
+    def __init__(self, arr, ax, position_axis: Axis) -> None:
         self.arr = arr
         self.num_of_vector = arr.shape[-1]
         self.ax = ax
         self._init_quiver()
+        self.position_axis = position_axis
 
     def _init_quiver(self):
         self._set_ax_lim()
@@ -34,20 +43,42 @@ class QuiverForce:
         self.ax.set_ylim(self.y_min, self.y_max)
         self.ax.set_zlim(self.z_min, self.z_max)
 
-    def _get_quiver_positions(self, scale=2):
-        # * scale should be 2 for in the middle
-        self.pos = []
-        self.pos.append([0, self.y_min / scale])
-        self.pos.append([0, self.y_max / scale])
-        self.pos.append([self.x_min / scale, self.y_min / scale])
-        self.pos.append([self.x_max / scale, self.y_min / scale])
-        self.pos.append([self.x_min / scale, self.y_max / scale])
-        self.pos.append([self.x_max / scale, self.y_max / scale])
+    def _get_quiver_positions(self, margin=0.25):
+        if self.position_axis == Axis.x:
+            self.pos = [
+                (
+                    (self.x_max - self.x_min) * margin
+                    + (self.x_max - self.x_min) * (1 - margin) * i,
+                    0,
+                    0,
+                )
+                for i in range(self.num_of_vector)
+            ]
+        if self.position_axis == Axis.y:
+            self.pos = [
+                (
+                    0,
+                    (self.y_max - self.y_min) * margin
+                    + (self.y_max - self.y_min) * (1 - margin) * i,
+                    0,
+                )
+                for i in range(self.num_of_vector)
+            ]
+        if self.position_axis == Axis.z:
+            self.pos = [
+                (
+                    (self.z_max - self.z_min) * margin
+                    + (self.z_max - self.z_min) * (1 - margin) * i,
+                    0,
+                    0,
+                )
+                for i in range(self.num_of_vector)
+            ]
 
     def _get_arrow(self, row, last_axis):
         x = self.pos[last_axis][0]
         y = self.pos[last_axis][1]
-        z = 0
+        z = self.pos[last_axis][2]
         u = self.arr[row, 0, last_axis]
         v = self.arr[row, 1, last_axis]
         w = self.arr[row, 2, last_axis]
@@ -56,20 +87,17 @@ class QuiverForce:
         return output
 
     def _set_quiver(self, index):
-        self.q0 = self.ax.quiver3D(*self._get_arrow(index, last_axis=0), color="red")
-        self.q1 = self.ax.quiver3D(*self._get_arrow(index, last_axis=1), color="red")
-        self.q2 = self.ax.quiver3D(*self._get_arrow(index, last_axis=2), color="blue")
-        self.q3 = self.ax.quiver3D(*self._get_arrow(index, last_axis=3), color="blue")
-        self.q4 = self.ax.quiver3D(*self._get_arrow(index, last_axis=4), color="blue")
-        self.q5 = self.ax.quiver3D(*self._get_arrow(index, last_axis=5), color="blue")
+        colors = ["red", "blue", "grey", "black", "green"]
+        self.quivers = [
+            self.ax.quiver3D(
+                *self._get_arrow(index, last_axis=i), color=random.choice(colors)
+            )
+            for i in range(self.num_of_vector)
+        ]
 
     def _remove_all_quiver(self):
-        self.q0.remove()
-        self.q1.remove()
-        self.q2.remove()
-        self.q3.remove()
-        self.q4.remove()
-        self.q5.remove()
+        for quiver in self.quivers:
+            quiver.remove()
 
     def update(self, index):
         self._remove_all_quiver()
@@ -77,17 +105,19 @@ class QuiverForce:
 
 
 class VectorViewer:
-    def __init__(self, arr: np.ndarray):
+    def __init__(self, arr: np.ndarray, position_axis: Axis):
         """init function for vector viewer
 
         Args:
             arr (np.ndarray): [input array,shape = (number_of_rows,3,number_of_vector)]
         """
         self.arr = arr
-        print(self.arr.shape)
+        logger.info(self.arr.shape)
         self.length = self.arr.shape[0]
         self.fig, self.ax = plt.subplots(subplot_kw=dict(projection="3d"))
-        self.quiver_force = QuiverForce(self.arr, ax=self.ax)
+        self.quiver_force = QuiverForce(
+            self.arr, ax=self.ax, position_axis=position_axis
+        )
 
     def get_view(self):
         self.ani = FuncAnimation(
@@ -121,6 +151,6 @@ if __name__ == "__main__":
 
     save_path = folder / "force_vector_animation.gif"
 
-    v = VectorViewer(arr_all)
+    v = VectorViewer(arr_all, position_axis=Axis.z)
     v.get_view()
-    v.save_ani(save_path)
+    # v.save_ani(save_path)
