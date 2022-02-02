@@ -7,22 +7,21 @@ from pathlib import Path
 from typing import List
 from loguru import logger
 from enum import Enum, auto
-import random
 
 
 class Axis(Enum):
-    x = auto()
-    y = auto()
-    z = auto()
+    x = "X"
+    y = "Y"
+    z = "Z"
 
 
 class QuiverForce:
     def __init__(self, arr, ax, position_axis: Axis) -> None:
+        self.position_axis = position_axis
         self.arr = arr
         self.num_of_vector = arr.shape[-1]
         self.ax = ax
         self._init_quiver()
-        self.position_axis = position_axis
 
     def _init_quiver(self):
         self._set_ax_lim()
@@ -47,8 +46,12 @@ class QuiverForce:
         if self.position_axis == Axis.x:
             self.pos = [
                 (
-                    (self.x_max - self.x_min) * margin
-                    + (self.x_max - self.x_min) * (1 - margin) * i,
+                    (self.x_max - self.x_min) * margin / 2
+                    + self.x_min
+                    + (self.x_max - self.x_min)
+                    * (1 - margin)
+                    / self.num_of_vector
+                    * (i + 0.5),
                     0,
                     0,
                 )
@@ -58,8 +61,12 @@ class QuiverForce:
             self.pos = [
                 (
                     0,
-                    (self.y_max - self.y_min) * margin
-                    + (self.y_max - self.y_min) * (1 - margin) * i,
+                    (self.y_max - self.y_min) * margin / 2
+                    + self.y_min
+                    + (self.y_max - self.y_min)
+                    * (1 - margin)
+                    / self.num_of_vector
+                    * (i + 0.5),
                     0,
                 )
                 for i in range(self.num_of_vector)
@@ -67,10 +74,14 @@ class QuiverForce:
         if self.position_axis == Axis.z:
             self.pos = [
                 (
-                    (self.z_max - self.z_min) * margin
-                    + (self.z_max - self.z_min) * (1 - margin) * i,
                     0,
                     0,
+                    (self.z_max - self.z_min) * margin / 2
+                    + self.z_min
+                    + (self.z_max - self.z_min)
+                    * (1 - margin)
+                    / self.num_of_vector
+                    * (i + 0.5),
                 )
                 for i in range(self.num_of_vector)
             ]
@@ -90,7 +101,7 @@ class QuiverForce:
         colors = ["red", "blue", "grey", "black", "green"]
         self.quivers = [
             self.ax.quiver3D(
-                *self._get_arrow(index, last_axis=i), color=random.choice(colors)
+                *self._get_arrow(index, last_axis=i), color=colors[i % len(colors)]
             )
             for i in range(self.num_of_vector)
         ]
@@ -127,7 +138,7 @@ class VectorViewer:
             interval=1,
             repeat=False,
         )
-        plt.show()
+        return self.fig
 
     def save_ani(self, save_path: Path):
         writergif = animation.PillowWriter(fps=30)
@@ -151,6 +162,6 @@ if __name__ == "__main__":
 
     save_path = folder / "force_vector_animation.gif"
 
-    v = VectorViewer(arr_all, position_axis=Axis.z)
+    v = VectorViewer(arr_all, position_axis=Axis.x)
     v.get_view()
     # v.save_ani(save_path)
