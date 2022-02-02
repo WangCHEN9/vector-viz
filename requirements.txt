@@ -9,4 +9,3 @@ pandas
 matplotlib
 numpy
 openpyxl
-git+https://github.com/WangCHEN9/vector_visualization.git@latest
